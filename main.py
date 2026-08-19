@@ -1,10 +1,12 @@
 import cv2
+import glob
 from motion_alert import send_email
 
 # Open the webcam
 video = cv2.VideoCapture(0) 
 first_frame = None
 status_list = []
+image_count = 1
 
 while True:
     # Assume there is no movement in the current frame
@@ -31,7 +33,6 @@ while True:
 
     # Expand the white areas to make detected movement easier to identify
     dilated_frame = cv2.dilate(threshold_frame, None, iterations=2) 
-    cv2.imshow("Webcam", dilated_frame)
 
     # Find the outlines of areas where movement was detected 
     contours, _ = cv2.findContours(
@@ -53,6 +54,17 @@ while True:
         # Movement was detected
         status = True
 
+        # Save the frame containing the detected movement
+        cv2.imwrite(f"images/{image_count}.png", frame)
+        image_count += 1
+
+        # Get the paths of all saved images
+        image_files = glob.glob("images/*.png")
+
+        # Select the image in the middle of the saved images
+        image_index = int(len(image_files) / 2)
+        motion_image = image_files[image_index]
+
     # Store the current motion status
     status_list.append(status)
 
@@ -65,7 +77,7 @@ while True:
 
     print(status_list)
 
-    cv2.imshow("Video", frame)
+    cv2.imshow("Webcam", frame)
 
     # Wait 1 millisecond for a key press
     key = cv2.waitKey(1) 
