@@ -1,5 +1,6 @@
 import cv2
 import glob
+import os
 from motion_alert import send_email
 
 # Open the webcam
@@ -8,11 +9,18 @@ first_frame = None
 status_list = []
 image_count = 1
 
+def clean_folder():
+    image_files = glob.glob("images/*.png")
+    for image_path in image_files:
+        os.remove(image_path)
+
+clean_folder()
+
 while True:
     # Assume there is no movement in the current frame
     status = False
 
-    # Ask the webcam for the next frame
+    # Get the next frame from the webcam
     _, frame = video.read() 
 
     # Convert the frame from colour to grayscale
@@ -73,7 +81,8 @@ while True:
 
     # Send an email when movement changes from detected to not detected
     if status_list[0] and not status_list[1]:
-        send_email()
+        send_email(motion_image)
+        clean_folder()
 
     print(status_list)
 
