@@ -2,6 +2,7 @@ import cv2
 import glob
 import os
 from motion_alert import send_email
+from threading import Thread
 
 # Open the webcam
 video = cv2.VideoCapture(0) 
@@ -13,8 +14,6 @@ def clean_folder():
     image_files = glob.glob("images/*.png")
     for image_path in image_files:
         os.remove(image_path)
-
-clean_folder()
 
 while True:
     # Assume there is no movement in the current frame
@@ -81,8 +80,11 @@ while True:
 
     # Send an email when movement changes from detected to not detected
     if status_list[0] and not status_list[1]:
-        send_email(motion_image)
-        clean_folder()
+        # Send the email in a separate thread so the webcam does not freeze
+        send_email_thread = Thread(target=send_email, args=(motion_image,))
+        send_email_thread.daemon = True
+
+        send_email_thread.start()
 
     print(status_list)
 
@@ -96,3 +98,6 @@ while True:
         break
 
 video.release()
+
+# Delete all saved images when the program ends
+clean_folder()
