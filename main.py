@@ -4,6 +4,10 @@ import os
 from motion_alert import send_email
 from threading import Thread
 
+# Create the images folder if it does not exist
+if not os.path.exists("images"):
+    os.makedirs("images")
+
 # Open the webcam
 video = cv2.VideoCapture(0) 
 first_frame = None
